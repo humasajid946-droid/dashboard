@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rawalpindi WebGIS Navigation Dashboard</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Leaflet Routing Machine CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        /* Top Header */
+        header {
+            background-color: #1e293b;
+            color: #ffffff;
+            text-align: center;
+            padding: 15px;
+            font-size: 22px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        /* Main Container */
+        .container {
+            display: flex;
+            flex: 1;
+        }
+        /* Left Sidebar */
+        .sidebar-left {
+            width: 250px;
+            background-color: #f8fafc;
+            padding: 20px;
+            border-right: 1px solid #cbd5e1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .sidebar-left h3 {
+            color: #334155;
+            font-size: 18px;
+            border-bottom: 2px solid #0284c7;
+            padding-bottom: 5px;
+        }
+        .btn-loc {
+            background-color: #0284c7;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        .btn-loc:hover {
+            background-color: #0369a1;
+        }
+        /* Map Area */
+        #map {
+            flex: 1;
+            height: 100%;
+        }
+        /* Right Sidebar */
+        .sidebar-right {
+            width: 260px;
+            background-color: #f8fafc;
+            padding: 20px;
+            border-left: 1px solid #cbd5e1;
+        }
+        .sidebar-right h3 {
+            color: #334155;
+            font-size: 18px;
+            border-bottom: 2px solid #0284c7;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        .student-info {
+            background-color: #ffffff;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .student-info p {
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #475569;
+        }
+        .student-info strong {
+            color: #0f172a;
+        }
+        #route-info {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e0f2fe;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #0369a1;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Dashboard Title -->
+    <header>
+        Rawalpindi Interactive WebGIS Navigation Dashboard
+    </header>
+
+    <div class="container">
+        <!-- Left Sidebar: Locations -->
+        <div class="sidebar-left">
+            <h3>Select Location</h3>
+            <button class="btn-loc" onclick="navigateToHospital(33.6297, 73.0722, 'Holy Family Hospital')">Holy Family Hospital</button>
+            <button class="btn-loc" onclick="navigateToHospital(33.6025, 73.0682, 'Benazir Bhutto Hospital')">Benazir Bhutto Hospital</button>
+        </div>
+
+        <!-- Center: OpenStreetMap -->
+        <div id="map"></div>
+
+        <!-- Right Sidebar: Student Details -->
+        <div class="sidebar-right">
+            <h3>Student Information</h3>
+            <div class="student-info">
+                <p><strong>Name:</strong> Huma Sajid</p>
+                <p><strong>ARID No:</strong> 24-Arid-2212</p>
+                <p><strong>City:</strong> Rawalpindi</p>
+            </div>
+            <div id="route-info">
+                <strong>Route Details:</strong>
+                <p id="route-text">Calculating...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet Routing Machine JS -->
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
+    <script>
+        // Map initialize around Rawalpindi
+        var map = L.map('map').setView([33.6150, 73.0650], 13);
+
+        // Add OpenStreetMap base tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Hospitals Coordinates
+        var holyFamilyCoords = [33.6297, 73.0722];
+        var benazirCoords = [33.6025, 73.0682];
+
+        // Add Markers for both Hospitals
+        L.marker(holyFamilyCoords).addTo(map).bindPopup("<b>Holy Family Hospital</b><br>Rawalpindi").openPopup();
+        L.marker(benazirCoords).addTo(map).bindPopup("<b>Benazir Bhutto Hospital</b><br>Rawalpindi");
+
+        var userLocation = null;
+        var routingControl = null;
+
+        // Get User Current Location using Browser Geolocation
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function (position) {
+                userLocation = [position.coords.latitude, position.coords.longitude];
+                
+                // Blue marker for User Current Location
+                L.circleMarker(userLocation, {
+                    radius: 8,
+                    fillColor: "#2563eb",
+                    color: "#ffffff",
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                }).addTo(map).bindPopup("<b>Your Current Location</b>");
+
+            }, function () {
+                alert("Geolocation failed or access denied. Defaulting to center location.");
+                userLocation = [33.6150, 73.0650]; // Fallback location
+            });
+        } else {
+            alert("Browser does not support Geolocation.");
+            userLocation = [33.6150, 73.0650];
+        }
+
+        // Function to route from Current Location to Selected Hospital
+        function navigateToHospital(lat, lng, name) {
+            if (!userLocation) {
+                alert("Fetching your current location. Please try again in a moment.");
+                return;
+            }
+
+            // Remove existing route if any
+            if (routingControl !== null) {
+                map.removeControl(routingControl);
+            }
+
+            // Create new route using Leaflet Routing Machine (OSRM)
+            routingControl = L.Routing.control({
+                waypoints: [
+                    L.latLng(userLocation[0], userLocation[1]),
+                    L.latLng(lat, lng)
+                ],
+                routeWhileDragging: false,
+                addWaypoints: false,
+                show: false // Hide text instructions box on map
+            }).addTo(map);
+
+            // Display Distance and Travel Time in Right Sidebar
+            routingControl.on('routesfound', function(e) {
+                var routes = e.routes;
+                var summary = routes[0].summary;
+                
+                var distanceKm = (summary.totalDistance / 1000).toFixed(2);
+                var timeMin = Math.round(summary.totalTime / 60);
+
+                var infoBox = document.getElementById('route-info');
+                var routeText = document.getElementById('route-text');
+                
+                infoBox.style.display = 'block';
+                routeText.innerHTML = "<b>Destination:</b> " + name + "<br>" +
+                                      "<b>Distance:</b> " + distanceKm + " km<br>" +
+                                      "<b>Est. Time:</b> " + timeMin + " mins";
+            });
+        }
+    </script>
+</body>
+</html>

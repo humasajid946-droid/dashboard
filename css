@@ -1,0 +1,114 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* Top Dashboard Title Header */
+header {
+    background-color: #1e293b;
+    color: #ffffff;
+    text-align: center;
+    padding: 15px;
+    font-size: 22px;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Main Layout Container */
+.container {
+    display: flex;
+    flex: 1;
+}
+
+/* Left Sidebar for Hospital Selection */
+.sidebar-left {
+    width: 250px;
+    background-color: #f8fafc;
+    padding: 20px;
+    border-right: 1px solid #cbd5e1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.sidebar-left h3 {
+    color: #334155;
+    font-size: 18px;
+    border-bottom: 2px solid #0284c7;
+    padding-bottom: 5px;
+}
+
+.btn-loc {
+    background-color: #0284c7;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+
+.btn-loc:hover {
+    background-color: #0369a1;
+}
+
+/* Center Map Container */
+#map {
+    flex: 1;
+    height: 100%;
+}
+
+/* Right Sidebar for Student Info */
+.sidebar-right {
+    width: 260px;
+    background-color: #f8fafc;
+    padding: 20px;
+    border-left: 1px solid #cbd5e1;
+}
+
+.sidebar-right h3 {
+    color: #334155;
+    font-size: 18px;
+    border-bottom: 2px solid #0284c7;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+}
+
+.student-info {
+    background-color: #ffffff;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.student-info p {
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #475569;
+}
+
+.student-info strong {
+    color: #0f172a;
+}
+
+/* Route Distance and Time Details Box */
+#route-info {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #e0f2fe;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #0369a1;
+    display: none;
+}
